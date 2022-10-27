@@ -23,7 +23,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="140dp"
         android:fontFamily="@font/jetbrains_mono_medium"
-        android:text="7:20"
+        android:text="00:00"
         android:textColor="#494949"
         android:textSize="96dp"
         app:layout_constraintEnd_toEndOf="parent"
