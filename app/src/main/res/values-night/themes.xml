@@ -1,0 +1,27 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.ImbaAlarm" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">#FF8C8C</item>
+        <item name="colorPrimaryVariant">@color/white</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">#DEDBFF</item>
+        <item name="colorOnSurface">#FF8C8C</item>
+        <item name="colorSecondaryVariant">#FF8C8C</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="chipStyle">@style/Widget.App.Chip</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="Widget.App.Chip" parent="Widget.Material3.MaterialTimePicker.Display">
+        <item name="android:textColor">@color/shrine_diplay_text_color</item>
+    </style>
+
+    <style name="SwitchCompatStyle" >
+        <item name="thumbTint">#BCBCBC</item>
+        <item name="trackTint">#FF8C8C</item>
+    </style>
+</resources>
