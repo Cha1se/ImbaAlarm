@@ -5,7 +5,7 @@
     android:id="@+id/mainLay"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#DEDBFF"
+    android:background="#313131"
     app:layout_constraintVertical_chainStyle="packed"
     tools:context=".MainActivity">
 
@@ -13,7 +13,7 @@
         android:id="@+id/title"
         android:layout_width="0dp"
         android:layout_height="70dp"
-        android:background="#FF8C8C"
+        android:background="@drawable/title_block"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -43,7 +43,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title"
-        app:layout_constraintVertical_bias="1.0" >
+        app:layout_constraintVertical_bias="1.0">
 
         <LinearLayout
             android:id="@+id/ContentLayout"
@@ -61,6 +61,6 @@
         android:padding="10dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/add64" />
+        app:srcCompat="@drawable/add" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

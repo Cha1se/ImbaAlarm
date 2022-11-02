@@ -2,30 +2,24 @@ package com.example.imbaalarm
 
 import android.app.AlarmManager
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Color
 import android.graphics.Typeface
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.CalendarContract.Colors
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import com.google.android.material.internal.ViewUtils.dpToPx
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-import org.junit.Test
-import java.time.LocalTime
-import java.time.Year
-import java.time.format.DateTimeFormatter
+import kotlinx.coroutines.*
+import java.lang.Runnable
 import java.util.*
 import kotlin.concurrent.timerTask
 
@@ -53,10 +47,19 @@ class MainActivity : AppCompatActivity(){
         scrollContainer = findViewById(R.id.ScrollContainer)
         titleContainer = findViewById(R.id.title)
         contentLay = findViewById(R.id.ContentLayout)
+        val filter = IntentFilter(Intent.ACTION_SCREEN_ON)
+        filter.addAction(Intent.ACTION_SCREEN_OFF)
+        filter.addAction(Intent.ACTION_USER_PRESENT)
+        filter.addAction(Intent.ACTION_BOOT_COMPLETED)
+        registerReceiver(MyReceiver(), filter)
 
     }
 
     fun AddAlarm (view: View) {
+
+        view.animate().scaleX(0.9f).scaleY(0.9f).setDuration(100).withEndAction(Runnable {
+            view.animate().scaleX(1f).scaleY(1f).setDuration(100).start()
+        }).start()
 
         val time1 = Calendar.getInstance()
         val hour1 = time1.get(Calendar.HOUR_OF_DAY)
@@ -86,7 +89,7 @@ class MainActivity : AppCompatActivity(){
         val intent = Intent(this, MyReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0)
 
-        val calendar: Calendar = Calendar.getInstance()
+        var calendar: Calendar = Calendar.getInstance()
         calendar.set(
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
@@ -97,12 +100,29 @@ class MainActivity : AppCompatActivity(){
         )
 
         if (isActivate) {
-            alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-            Toast.makeText(this, "Alarm is set", Toast.LENGTH_SHORT).show()
+            alarmManager.set(AlarmManager.RTC_WAKEUP, checkBackTime(calendar).timeInMillis, pendingIntent)
         } else {
             alarmManager.cancel(pendingIntent)
         }
 
+
+    }
+
+    fun checkBackTime(cal: Calendar): Calendar {
+        var nowCal = Calendar.getInstance()
+
+        if (cal.get(Calendar.HOUR_OF_DAY) < nowCal.get(Calendar.HOUR_OF_DAY)) {
+            cal.set(Calendar.DAY_OF_MONTH, cal.get(Calendar.DAY_OF_MONTH) + 1)
+            return cal
+        } else if ((cal.get(Calendar.HOUR_OF_DAY) == nowCal.get(Calendar.HOUR_OF_DAY)) && (cal.get(Calendar.MINUTE) < nowCal.get(Calendar.MINUTE))) {
+            cal.set(Calendar.DAY_OF_MONTH, cal.get(Calendar.DAY_OF_MONTH) + 1)
+            return cal
+        } else if ((cal.get(Calendar.HOUR_OF_DAY) == nowCal.get(Calendar.HOUR_OF_DAY)) && (cal.get(Calendar.MINUTE) == nowCal.get(Calendar.MINUTE))) {
+            cal.set(Calendar.DAY_OF_MONTH, cal.get(Calendar.DAY_OF_MONTH) + 1)
+            return cal
+        } else {
+            return cal
+        }
     }
 
     fun AddAlarmMessage (hour: String, min: String) {
@@ -112,12 +132,12 @@ class MainActivity : AppCompatActivity(){
         var alarmSwitch: SwitchMaterial = SwitchMaterial(this)
         var deleteAlarm: ImageButton = ImageButton(this)
 
-        var params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(55))
+        var params = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, dpToPx(56))
         params.topMargin = dpToPx(10)
 
         alarmContainer.apply {
             id = IDLay++
-            setBackgroundColor(Color.parseColor("#494949"))
+            setBackgroundResource(R.drawable.alarm_block)
             layoutParams = params
         }
 
@@ -127,31 +147,11 @@ class MainActivity : AppCompatActivity(){
         paramparam.addRule(RelativeLayout.CENTER_HORIZONTAL)
         paramparam.addRule(RelativeLayout.CENTER_VERTICAL)
 
-        var hourStr: String = ""
-        var minStr: String = ""
-
-        if (hour.toInt() < 10) {
-           hourStr = "0${hour.toString()}"
-        } else {
-            hourStr = hour.toString()
-        }
-        if (hour.toInt() == 0) {
-            hourStr = "00"
-        }
-        if (min.toInt() < 10) {
-            var minStr = "0${hour.toString()}"
-        } else {
-            minStr = min.toString()
-        }
-        if (min.toInt() == 0) {
-            minStr = "00"
-        }
-
         var alarmText: TextView = TextView(this)
         alarmText.apply {
             id = IDText++
             inputType = EditText.AUTOFILL_TYPE_TEXT
-            text = "$hourStr:$minStr"
+            text = "${correctTime(hour.toInt(), min.toInt())[0]}:${correctTime(hour.toInt(), min.toInt())[1]}"
             textAlignment = EditText.TEXT_ALIGNMENT_CENTER
             textSize = dpToPx(10).toFloat()
             setTextColor(ContextCompat.getColor(context,R.color.white))
@@ -164,8 +164,11 @@ class MainActivity : AppCompatActivity(){
         paramSwitch.addRule(RelativeLayout.ALIGN_END)
         paramSwitch.addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
         paramSwitch.addRule(RelativeLayout.CENTER_VERTICAL)
+        paramSwitch.marginEnd = dpToPx(15)
 
         alarmSwitch.apply {
+            scaleX = 1.2f
+            scaleY = 1.2f
             id = IDSwitch++
             layoutParams = paramSwitch
             isChecked = true
@@ -192,19 +195,70 @@ class MainActivity : AppCompatActivity(){
         }
 
         deleteAlarm.setOnClickListener(View.OnClickListener {
-            val idAlarm = deleteAlarm.id
-            contentLay.removeView(findViewById(idAlarm-3000))
+            alarmContainer.animate().alpha(0f)
+                .translationX(-mainLay.width.toFloat())
+                .setDuration(500L)
+                .withEndAction(Runnable {
+                    val idAlarm = deleteAlarm.id
+                    setAlarm(pickedHour, pickedMin, false)
+                    contentLay.removeView(findViewById(idAlarm-3000))
+                })
+                .start()
         })
 
         alarmContainer.addView(alarmSwitch)
         alarmContainer.addView(alarmText)
         alarmContainer.addView(deleteAlarm)
+        alarmContainer.alpha = 0f
+        alarmContainer.translationX = -mainLay.width.toFloat()
+        alarmContainer.animate().alpha(1f)
+            .translationX(0f)
+            .setDuration(500L)
+            .start()
+
+/*        var nowCalendar = Calendar.getInstance()
+        CoroutineScope(Dispatchers.Main + Job()).launch {
+            var isOn = true
+            while (isOn) {
+                if (nowCalendar.get(Calendar.HOUR_OF_DAY) == hour.toInt() && nowCalendar.get(Calendar.MINUTE) == min.toInt()) {
+                    alarmSwitch.isChecked = false
+                }
+                if (alarmContainer.childCount == 0) {
+                    isOn = false
+                }
+                delay(100)
+            }
+        }*/
 
     }
 
     fun dpToPx(dp: Int): Int {
         var displayMetrics : DisplayMetrics = this.getResources().getDisplayMetrics();
         return Math.round(dp * (displayMetrics.xdpi / DisplayMetrics.DENSITY_DEFAULT));
+    }
+
+    fun correctTime(hour: Int, min: Int):List<String> {
+        var hourStr: String
+        var minStr: String
+
+        if (hour.toInt() < 10) {
+            hourStr = "0${hour.toString()}"
+        } else {
+            hourStr = hour.toString()
+        }
+        if (hour.toInt() == 0) {
+            hourStr = "00"
+        }
+
+        if (min.toInt() < 10) {
+            minStr = "0${min.toString()}"
+        } else {
+            minStr = min.toString()
+        }
+        if (min.toInt() == 0) {
+            minStr = "00"
+        }
+        return listOf(hourStr, minStr)
     }
 
 
